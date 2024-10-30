@@ -1,4 +1,11 @@
-import { PORT } from '../config/config.js';
+import { PORT } from './config.js';
+
+export const socket = io(`http://localhost:${PORT}`);
+
+export const displayError = err => {
+  console.log(err);
+  alert(err);
+}
 
 export const apiCall = (method, path, payload, successHandler) => {
   let url = `http://localhost:${PORT}/${path}`;
@@ -24,4 +31,11 @@ export const apiCall = (method, path, payload, successHandler) => {
       return successHandler(data);
     }
   });
+};
+
+export const appendMessage = (msg) => {
+  const textBox = document.createElement('div');
+  textBox.classList.add('text-box');
+  textBox.innerText = msg;
+  document.getElementById('chat-box').appendChild(textBox);
 };

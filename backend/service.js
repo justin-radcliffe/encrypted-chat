@@ -7,3 +7,7 @@ export const clientJoin = () => {
     id: nextClient,
   };
 };
+
+export const sendMessage = () => {
+  
+};
