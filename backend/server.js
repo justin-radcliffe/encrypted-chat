@@ -25,6 +25,9 @@ app.post('/join', (req, res) => {
 io.on('connection', (socket) => {
   console.log('Received a connection from client');
 
+  // TODO: connect an id to a specific socket so that the messages can be styled depending on who sent the message
+  // console.log(socket.handshake);
+
   /* Send message to all other cilents */
   socket.on('message', (msg) => {
     socket.broadcast.emit('message', msg);
