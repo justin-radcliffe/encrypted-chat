@@ -1,4 +1,14 @@
+body {
+  background-color: #eeeeee;
+}
+
+#join-button {
+  display: block;
+  margin: 200px auto 0 auto;
+}
+
 #main-block {
+  display: none;
   width: 800px;
   height: 500px;
   margin: 125px auto 0 auto;
@@ -7,7 +17,9 @@
 #chat-box {
   height: 100%;
   margin: 0 0 20px 0;
-  border: 2px solid #dddddd;
+  padding: 10px;
+  border: 1px solid #dddddd;
   border-radius: 10px;
+  background-color: white;
   overflow-y: auto;
 }
