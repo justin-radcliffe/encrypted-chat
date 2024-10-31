@@ -33,9 +33,10 @@ export const apiCall = (method, path, payload, successHandler) => {
   });
 };
 
-export const appendMessage = (msg) => {
+export const appendMessage = (msg, myMessage) => {
   const textBox = document.createElement('div');
   textBox.classList.add('text-box');
+  textBox.classList.add(myMessage ? 'text-box-a' : 'text-box-b');
   textBox.innerText = msg;
   document.getElementById('chat-box').appendChild(textBox);
 };

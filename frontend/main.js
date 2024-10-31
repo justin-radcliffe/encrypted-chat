@@ -25,8 +25,14 @@ joinButton.addEventListener('click', () => {
 
 sendButton.addEventListener('click', () => {
   socket.emit('message', messageInput.value);
-  appendMessage(messageInput.value);
+  appendMessage(messageInput.value, true);
   messageInput.value = '';
 });
 
-socket.on('message', (msg) => appendMessage(msg));
+messageInput.addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') {
+    sendButton.click();
+  }
+});
+
+socket.on('message', msg => appendMessage(msg, false));
