@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { PORT } from './config.js';
 
 export const displayError = err => {
@@ -5,12 +6,12 @@ export const displayError = err => {
   alert(err);
 }
 
-export const apiCall = (method, path, payload, successHandler) => {
+export const apiCall = async (method, path, payload, successHandler) => {
   let url = `http://localhost:${PORT}/${path}`;
   const req = {
     method: method,
     headers: {
-    'Content-type': 'application/json',
+      'Content-type': 'application/json',
     },
   };
 
@@ -20,15 +21,13 @@ export const apiCall = (method, path, payload, successHandler) => {
     url += `?${payload}`;
   }
 
-  return fetch(url, req)
-  .then(res => res.json())
-  .then(data => {
-    if (data.error) {
-      throw new Error(data.error);
-    } else {
-      return successHandler(data);
-    }
-  });
+  const res = await fetch(url, req);
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(data.error);
+  } else {
+    return successHandler(data);
+  }
 };
 
 export const appendMessage = (msg, senderId) => {

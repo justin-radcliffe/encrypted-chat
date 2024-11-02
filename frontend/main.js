@@ -1,5 +1,5 @@
 import { PORT } from './config.js';
-import { displayError, apiCall, appendMessage } from './helper.js';
+import { displayError, apiCall, appendMessage, generateKey } from './helper.js';
 
 const joinButton = document.getElementById('join-button');
 const sendButton = document.getElementById('send-button');
@@ -33,6 +33,10 @@ joinButton.addEventListener('click', () => {
 
     /* Handle incoming messages */
     socket.on('message', (msg, senderId) => appendMessage(msg, senderId));
+  })
+  .then(() => generateKey())
+  .then(key => {
+
   })
   .catch(err => displayError(err));
 });
