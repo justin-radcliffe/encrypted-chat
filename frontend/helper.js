@@ -1,7 +1,5 @@
 import { PORT } from './config.js';
 
-export const socket = io(`http://localhost:${PORT}`);
-
 export const displayError = err => {
   console.log(err);
   alert(err);
@@ -33,10 +31,24 @@ export const apiCall = (method, path, payload, successHandler) => {
   });
 };
 
-export const appendMessage = (msg, myMessage) => {
+export const appendMessage = (msg, senderId) => {
   const textBox = document.createElement('div');
   textBox.classList.add('text-box');
-  textBox.classList.add(myMessage ? 'text-box-a' : 'text-box-b');
+  
+  const myId = sessionStorage.getItem('id');
+
+  /* I am a sender */
+  if (myId === '1' || myId === '2') {
+    if (senderId === myId) {
+      textBox.classList.add('text-box-right');
+      textBox.classList.add('text-box-me');
+    } else {
+      textBox.classList.add('text-box-left');
+    }
+  } else /* I am a spectator */ {
+    textBox.classList.add(senderId === '1' ? 'text-box-left' : 'text-box-right');
+  }
+  
   textBox.innerText = msg;
   document.getElementById('chat-box').appendChild(textBox);
 };

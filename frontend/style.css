@@ -36,15 +36,24 @@ body {
   width: 60%;
   padding: 12px;
   border-radius: 10px;
+  background-color: #dddddd;
 }
 
-.text-box-a {
+.text-box-left {
+  margin: 0 0 10px 0;
+}
+
+.text-box-right {
   margin: 0 0 10px auto;
+}
+
+.text-box-me {
   color: white;
   background-color: #007bff;
 }
 
-.text-box-b {
-  margin: 0 0 10px 0;
-  background-color: #dddddd;
+@media (max-width: 760px) {
+  #main-block {
+    width: 92vw;
+  }
 }
