@@ -38,11 +38,15 @@ joinButton.addEventListener('click', () => {
 
       /* Handle incoming messages */
       socket.on('message', (encryptedMessage, iv, senderId) => {
-        decryptMessage(sharedKey, encryptedMessage, iv)
-        .then(decryptedMessage => {
-          appendMessage(decryptedMessage, senderId);
-        })
-        .catch(err => displayError(err));
+        if (sharedKey === undefined) {
+          appendMessage(encryptedMessage, senderId);
+        } else {
+          decryptMessage(sharedKey, base64ToArrayBuffer(encryptedMessage), base64ToArrayBuffer(iv))
+          .then(decryptedMessage => {
+            appendMessage(decryptedMessage, senderId);
+          })
+          .catch(err => displayError(err));
+        }
       });
     }
   )
@@ -84,11 +88,31 @@ joinButton.addEventListener('click', () => {
   .catch(err => displayError(err));
 });
 
+function bufferToBase64(buffer) {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function base64ToArrayBuffer(base64) {
+  const binary = window.atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
 /* Send message by clicking */
 sendButton.addEventListener('click', () => {
   encryptMessage(sharedKey, messageInput.value)
-  .then(data => {  
-    socket.emit('message', data.encryptedMessage, data.iv);
+  .then(data => {
+    socket.emit('message', bufferToBase64(data.encryptedMessage), bufferToBase64(data.iv));
     appendMessage(messageInput.value, sessionStorage.getItem('id'));
     messageInput.value = '';
   })

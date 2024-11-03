@@ -32,13 +32,13 @@ io.on('connection', (socket) => {
 
   /* Send message to all other cilents */
   socket.on('message', (encryptedMessage, iv) => {
-    console.log(encryptedMessage);
-    console.log(iv);
-    console.log('after');
-    encryptedMessage = new ArrayBuffer(encryptedMessage);
-    iv = new Uint8Array(iv);
-    console.log(encryptedMessage);
-    console.log(iv);
+    // console.log(encryptedMessage);
+    // console.log(iv);
+    // console.log('after');
+    // encryptedMessage = new ArrayBuffer(encryptedMessage);
+    // iv = new Uint8Array(iv);
+    // console.log(encryptedMessage);
+    // console.log(iv);
     socket.broadcast.emit('message', encryptedMessage, iv, socket.handshake.auth.id);
   });
 });

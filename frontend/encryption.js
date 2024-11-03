@@ -80,10 +80,10 @@ export const decryptMessage = async (key, encryptedMessage, iv) => {
   const decrypted = await crypto.subtle.decrypt(
     {
       name: 'AES-GCM',
-      iv: new Uint8Array(iv),
+      iv: iv,
     },
     key,
-    new ArrayBuffer(encryptedMessage)
+    encryptedMessage
   );
   
   const decoder = new TextDecoder();

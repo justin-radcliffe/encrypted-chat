@@ -37,6 +37,7 @@ body {
   padding: 12px;
   border-radius: 10px;
   background-color: #dddddd;
+  word-wrap: break-word;
 }
 
 .text-box-left {
