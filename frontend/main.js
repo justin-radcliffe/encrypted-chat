@@ -5,6 +5,7 @@ import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey,
 const joinButton = document.getElementById('join-button');
 const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
+const selectEncryption = document.getElementById('select-encryption');
 
 let socket, privateKey, sharedKey;
 
@@ -15,7 +16,7 @@ joinButton.addEventListener('click', () => {
     'join',
     {},
     data => {
-      console.log(data);
+      /* Store session data */
       sessionStorage.setItem('messenger', data.messenger);
       sessionStorage.setItem('id', data.id);
 
@@ -25,29 +26,6 @@ joinButton.addEventListener('click', () => {
           id: sessionStorage.getItem('id'),
         },
       });
-      
-      joinButton.style.display = 'none';
-      document.getElementById('main-block').style.display = 'block';
-      
-      /* Only let messengers send messages, otherwise they only spectate */
-      if (data.messenger) {
-        document.getElementById('message-box').style.display = 'flex';
-      } else {
-        document.getElementById('spectating-message').style.display = 'block';
-      }
-
-      /* Handle incoming messages */
-      socket.on('message', (encryptedMessage, iv, senderId) => {
-        if (sharedKey === undefined) {
-          appendMessage(encryptedMessage, senderId);
-        } else {
-          decryptMessage(sharedKey, base64ToArrayBuffer(encryptedMessage), base64ToArrayBuffer(iv))
-          .then(decryptedMessage => {
-            appendMessage(decryptedMessage, senderId);
-          })
-          .catch(err => displayError(err));
-        }
-      });
     }
   )
   .then(() => generateECDHKeyPair())
@@ -56,22 +34,22 @@ joinButton.addEventListener('click', () => {
     return exportPublicKey(keyPair.publicKey);
   })
   .then(publicKeyJWK => {
+    /* Handle incoming messages */
+    socket.on('message', (encryptedMessage, iv, senderId) => {
+      if (sharedKey === undefined) {
+        appendMessage(encryptedMessage, senderId);
+      } else {
+        decryptMessage(sharedKey, base64ToArrayBuffer(encryptedMessage), base64ToArrayBuffer(iv))
+        .then(decryptedMessage => appendMessage(decryptedMessage, senderId))
+        .catch(err => displayError(err));
+      }
+    });
+
     /* Handle incoming ECDH public key */
     socket.on('public-key', (otherPublicKeyJWK) => {
       importPublicKey(otherPublicKeyJWK)
-      .then(otherPublicKey => {
-        if (sessionStorage.getItem('id') === '2') {
-          console.log('ECDH keys successfully shared');
-        }
-        return otherPublicKey;
-      })
-      .then(otherPublicKey => {
-        deriveSharedKey(privateKey, otherPublicKey)
-        .then(derivedKey => {
-          console.log(derivedKey);
-          sharedKey = derivedKey;
-        });
-      })
+      .then(otherPublicKey => deriveSharedKey(privateKey, otherPublicKey))
+      .then(derivedKey => sharedKey = derivedKey)
       .catch(err => displayError(err));
 
       /* Send my public key if I have not yet since I was first to join */
@@ -83,6 +61,19 @@ joinButton.addEventListener('click', () => {
     /* Send my public key if I am second to join */
     if (sessionStorage.getItem('id') === '2') {
       socket.emit('public-key', publicKeyJWK);
+    }
+  })
+  .then(() => {
+    joinButton.style.display = 'none';
+    document.getElementById('main-block').style.display = 'block';
+    
+    /* Only let messengers send messages, otherwise they only spectate */
+    if (sessionStorage.getItem('messenger') === 'true') {
+      document.getElementById('message-box').style.display = 'flex';
+      selectEncryption.style.display = 'block';
+      console.log(selectEncryption.value);
+    } else {
+      document.getElementById('spectating-message').style.display = 'block';
     }
   })
   .catch(err => displayError(err));
@@ -103,5 +94,13 @@ sendButton.addEventListener('click', () => {
 messageInput.addEventListener('keyup', (e) => {
   if (e.key === 'Enter') {
     sendButton.click();
+  }
+});
+
+/* Select encryption method */
+selectEncryption.addEventListener('onchange', () => {
+  if (selectEncryption.value !== '') {
+    messageInput.disabled = false;
+    sendButton.disabled = false;
   }
 });

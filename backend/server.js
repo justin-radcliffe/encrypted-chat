@@ -4,7 +4,7 @@ import cors from 'cors';
 import { Server } from 'socket.io';
 
 import { PORT } from './config.js';
-import { clientJoin, sendMessage } from './service.js';
+import { clientJoin } from './service.js';
 
 /* Server setup */
 const app = express();

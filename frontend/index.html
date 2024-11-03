@@ -12,9 +12,15 @@
   <div id="main-block">
     <div id="chat-box"></div>
     <div id="message-box" class="input-group">
-      <input id="message-input" type="text" class="form-control" placeholder="Send message" aria-label="Send message" aria-describedby="send-button">
-      <button class="btn btn-outline-success" type="button" id="send-button">Send</button>
+      <input id="message-input" type="text" class="form-control" placeholder="Send message" aria-label="Send message" aria-describedby="send-button" disabled>
+      <button class="btn btn-outline-success" type="button" id="send-button" disabled>Send</button>
     </div>
+    <select id="select-encryption" class="form-select">
+      <option value="" selected>Choose an encryption method</option>
+      <option value="none">None</option>
+      <option value="caesar">Caesar cipher</option>
+      <option value="aes">AES-GCM</option>
+    </select>
     <p id="spectating-message">You are spectating.</p>
   </div>
   <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>

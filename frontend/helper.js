@@ -1,10 +1,11 @@
 import { PORT } from './config.js';
+import { importPublicKey, deriveSharedKey, decryptMessage } from './encryption.js';
 
 /* Display an error message (console and alert) */
 export const displayError = err => {
   console.error(err);
   alert(err);
-}
+};
 
 export const apiCall = async (method, path, payload, successHandler) => {
   let url = `http://localhost:${PORT}/${path}`;
@@ -62,7 +63,7 @@ export const bufferToBase64 = (buffer) => {
     binary += String.fromCharCode(bytes[i]);
   }
   return window.btoa(binary);
-}
+};
 
 /* Convert a base 64 string to an ArrayBuffer for decryption after socket transfer */
 export const base64ToArrayBuffer = (base64) => {
@@ -73,4 +74,4 @@ export const base64ToArrayBuffer = (base64) => {
     bytes[i] = binary.charCodeAt(i);
   }
   return bytes.buffer;
-}
+};

@@ -28,8 +28,16 @@ body {
   display: none;
 }
 
+#select-encryption {
+  display: none;
+  width: 50%;
+  min-width: 265px;
+  margin: 10px auto 0 auto;
+}
+
 #spectating-message {
   display: none;
+  text-align: center;
 }
 
 .text-box {
