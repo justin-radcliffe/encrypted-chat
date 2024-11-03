@@ -32,6 +32,10 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('public-key', publicKeyJWK);
   });
 
+  socket.on('encrypt-strategy', (encryptStrategy) => {
+    socket.broadcast.emit('encrypt-strategy', encryptStrategy);
+  });
+
   /* Send message to all other cilents */
   socket.on('message', (encryptedMessage, iv) => {
     console.log(`encryptedMessage: ${encryptedMessage} | iv: ${iv}`);

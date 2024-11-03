@@ -7,7 +7,7 @@ const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
 const selectEncryption = document.getElementById('select-encryption');
 
-let socket, privateKey, sharedKey;
+let socket, privateKey, sharedKey, encryptStrategy;
 
 /* Join the chat room */
 joinButton.addEventListener('click', () => {
@@ -36,7 +36,7 @@ joinButton.addEventListener('click', () => {
   .then(publicKeyJWK => {
     /* Handle incoming messages */
     socket.on('message', (encryptedMessage, iv, senderId) => {
-      if (sharedKey === undefined) {
+      if (sharedKey === undefined || encryptStrategy === 'none') {
         appendMessage(encryptedMessage, senderId);
       } else {
         decryptMessage(sharedKey, base64ToArrayBuffer(encryptedMessage), base64ToArrayBuffer(iv))
@@ -55,6 +55,20 @@ joinButton.addEventListener('click', () => {
       /* Send my public key if I have not yet since I was first to join */
       if (sessionStorage.getItem('id') === '1') {
         socket.emit('public-key', publicKeyJWK);
+      }
+    });
+
+    /* Handle incoming encryption strategy */
+    socket.on('encrypt-strategy', (receivedEncryptStrategy) => {
+      encryptStrategy = receivedEncryptStrategy;
+      selectEncryption.value = receivedEncryptStrategy;
+      console.log(receivedEncryptStrategy);
+      if (receivedEncryptStrategy === '') {
+        messageInput.disabled = true;
+        sendButton.disabled = true;
+      } else {
+        messageInput.disabled = false;
+        sendButton.disabled = false;
       }
     });
 
@@ -81,13 +95,19 @@ joinButton.addEventListener('click', () => {
 
 /* Send message by clicking */
 sendButton.addEventListener('click', () => {
-  encryptMessage(sharedKey, messageInput.value)
-  .then(data => {
-    socket.emit('message', bufferToBase64(data.encryptedMessage), bufferToBase64(data.iv));
+  if (encryptStrategy === 'none') {
+    socket.emit('message', messageInput.value);
     appendMessage(messageInput.value, sessionStorage.getItem('id'));
     messageInput.value = '';
-  })
-  .catch(err => displayError(err));
+  } else { 
+    encryptMessage(sharedKey, messageInput.value)
+    .then(data => {
+      socket.emit('message', bufferToBase64(data.encryptedMessage), bufferToBase64(data.iv));
+      appendMessage(messageInput.value, sessionStorage.getItem('id'));
+      messageInput.value = '';
+    })
+    .catch(err => displayError(err));
+  }
 });
 
 /* Send message with enter key */
@@ -98,9 +118,14 @@ messageInput.addEventListener('keyup', (e) => {
 });
 
 /* Select encryption method */
-selectEncryption.addEventListener('onchange', () => {
-  if (selectEncryption.value !== '') {
+selectEncryption.addEventListener('change', () => {
+  if (selectEncryption.value === '') {
+    messageInput.disabled = true;
+    sendButton.disabled = true;
+  } else {
     messageInput.disabled = false;
     sendButton.disabled = false;
   }
+  encryptStrategy = selectEncryption.value;
+  socket.emit('encrypt-strategy', encryptStrategy);
 });
