@@ -25,6 +25,11 @@ app.post('/join', (req, res) => {
 io.on('connection', (socket) => {
   console.log('Received a connection from client');
 
+  /* Send public key to client */
+  socket.on('public-key', (publicKeyJWK) => {
+    socket.broadcast.emit('public-key', publicKeyJWK);
+  });
+
   /* Send message to all other cilents */
   socket.on('message', (msg) => {
     socket.broadcast.emit('message', msg, socket.handshake.auth.id);
