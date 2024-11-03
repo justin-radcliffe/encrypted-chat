@@ -1,7 +1,8 @@
 import { PORT } from './config.js';
 
+/* Display an error message (console and alert) */
 export const displayError = err => {
-  console.log(err);
+  console.error(err);
   alert(err);
 }
 
@@ -29,6 +30,7 @@ export const apiCall = async (method, path, payload, successHandler) => {
   }
 };
 
+/* Display the sent or received message in the chat box */
 export const appendMessage = (msg, senderId) => {
   const textBox = document.createElement('div');
   textBox.classList.add('text-box');
@@ -50,3 +52,25 @@ export const appendMessage = (msg, senderId) => {
   textBox.innerText = msg;
   document.getElementById('chat-box').appendChild(textBox);
 };
+
+/* Convert an ArrayBuffer to a base 64 string for socket transfer */
+export const bufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+/* Convert a base 64 string to an ArrayBuffer for decryption after socket transfer */
+export const base64ToArrayBuffer = (base64) => {
+  const binary = window.atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}

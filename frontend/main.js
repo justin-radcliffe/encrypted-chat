@@ -1,6 +1,6 @@
 import { PORT } from './config.js';
-import { displayError, apiCall, appendMessage } from './helper.js';
-import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, /*generateKey,*/ encryptMessage, decryptMessage } from './encryption.js';
+import { displayError, apiCall, appendMessage, bufferToBase64, base64ToArrayBuffer } from './helper.js';
+import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, encryptMessage, decryptMessage } from './encryption.js';
 
 const joinButton = document.getElementById('join-button');
 const sendButton = document.getElementById('send-button');
@@ -87,26 +87,6 @@ joinButton.addEventListener('click', () => {
   })
   .catch(err => displayError(err));
 });
-
-function bufferToBase64(buffer) {
-  let binary = '';
-  const bytes = new Uint8Array(buffer);
-  const len = bytes.byteLength;
-  for (let i = 0; i < len; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return window.btoa(binary);
-}
-
-function base64ToArrayBuffer(base64) {
-  const binary = window.atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
-}
 
 /* Send message by clicking */
 sendButton.addEventListener('click', () => {

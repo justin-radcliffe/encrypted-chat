@@ -2,21 +2,24 @@
 ////////////////////////////   ECDH KEY EXCHANGE   /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/* Generates a key pair, public and private, using the Elliptic-curve Diffie–Hellman protocol */
 export const generateECDHKeyPair = async () => {
   return await crypto.subtle.generateKey(
     {
       name: 'ECDH',
       namedCurve: 'P-256',
     },
-    true, /* Extractable to share the public key */
+    true,
     ['deriveKey']
   );
 }
 
+/* Export the public key to a JSON Web Key so it can be send through a socket */
 export const exportPublicKey = async (publicKey) => {
-  return await crypto.subtle.exportKey('jwk', publicKey); // Export in JWK format
+  return await crypto.subtle.exportKey('jwk', publicKey);
 }
 
+/* Import from a JSON Web Key to a CryptoKey object */
 export const importPublicKey = async (jwkKey) => {
   return await crypto.subtle.importKey(
     'jwk',
@@ -30,6 +33,7 @@ export const importPublicKey = async (jwkKey) => {
   );
 }
 
+/* Derive the shared key used for AES-GCM encryption */
 export const deriveSharedKey = async (privateKey, otherPublicKey) => {
   return await crypto.subtle.deriveKey(
     {
@@ -38,31 +42,25 @@ export const deriveSharedKey = async (privateKey, otherPublicKey) => {
     },
     privateKey,
     {
-      name: 'AES-GCM', // Define AES-GCM as the algorithm for encryption
+      name: 'AES-GCM',
       length: 256,
     },
-    true, // Extractable to use for encryption/decryption
+    true,
     ['encrypt', 'decrypt']
   );
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////   AES ENCRYPTION   //////////////////////////////
+////////////////////////////   AES-GCM ENCRYPTION   ////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// export const generateKey = async () => {
-//   return crypto.subtle.generateKey(
-//     { name: 'AES-GCM', length: 256 }, /* AES-GCM for encryption, 256-bit key */
-//     true, /* Extractable to share the key */
-//     ['encrypt', 'decrypt'] /* Key can be used for encryption and decryption */
-//   );
-// };
-
+/* Encrypt the given plaintext message with the shared AES key */
 export const encryptMessage = async (key, message) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(message);
 
-  const iv = crypto.getRandomValues(new Uint8Array(12)); // 12-byte IV for AES-GCM
+  /* Initialisation vector */
+  const iv = crypto.getRandomValues(new Uint8Array(12));
 
   const encryptedMessage = await crypto.subtle.encrypt(
     {
@@ -76,6 +74,7 @@ export const encryptMessage = async (key, message) => {
   return { iv, encryptedMessage };
 }
 
+/* Decrypt the given ciphertext message with the shared AES key and the initialisation vector */
 export const decryptMessage = async (key, encryptedMessage, iv) => {
   const decrypted = await crypto.subtle.decrypt(
     {

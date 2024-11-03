@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { PORT } from './config.js';
 import { clientJoin, sendMessage } from './service.js';
 
+/* Server setup */
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -18,6 +19,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+/* Join the chat */
 app.post('/join', (req, res) => {
   return res.json(clientJoin());
 });
@@ -32,21 +34,10 @@ io.on('connection', (socket) => {
 
   /* Send message to all other cilents */
   socket.on('message', (encryptedMessage, iv) => {
-    // console.log(encryptedMessage);
-    // console.log(iv);
-    // console.log('after');
-    // encryptedMessage = new ArrayBuffer(encryptedMessage);
-    // iv = new Uint8Array(iv);
-    // console.log(encryptedMessage);
-    // console.log(iv);
+    console.log(`encryptedMessage: ${encryptedMessage} | iv: ${iv}`);
     socket.broadcast.emit('message', encryptedMessage, iv, socket.handshake.auth.id);
   });
 });
-
-// app.put('/send', (req, res) => {
-//   const { id, message } = req.body;
-//   return res.json(sendMessage(id, message));
-// });
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
