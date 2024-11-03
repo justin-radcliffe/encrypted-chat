@@ -88,3 +88,7 @@ export const decryptMessage = async (key, encryptedMessage, iv) => {
   const decoder = new TextDecoder();
   return decoder.decode(decrypted);
 }
+
+// TODO: make your own caesar cipher function
+// TODO (maybe): add a message once the first person joins that is in the middle of the screen like "waiting for interlocutor" or something
+// TODO: disable ability to choose encryption method until a second person has joined

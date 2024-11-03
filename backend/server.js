@@ -32,6 +32,7 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('public-key', publicKeyJWK);
   });
 
+  /* Send encryption strategy to client */
   socket.on('encrypt-strategy', (encryptStrategy) => {
     socket.broadcast.emit('encrypt-strategy', encryptStrategy);
   });
