@@ -1,12 +1,12 @@
 import { PORT } from './config.js';
 import { displayError, apiCall, appendMessage } from './helper.js';
-import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, generateKey, encryptMessage, decryptMessage } from './encryption.js';
+import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, /*generateKey,*/ encryptMessage, decryptMessage } from './encryption.js';
 
 const joinButton = document.getElementById('join-button');
 const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
 
-let socket, privateKey, otherPublicKey;
+let socket, privateKey, sharedKey;
 
 /* Join the chat room */
 joinButton.addEventListener('click', () => {
@@ -37,23 +37,38 @@ joinButton.addEventListener('click', () => {
       }
 
       /* Handle incoming messages */
-      socket.on('message', (msg, senderId) => appendMessage(msg, senderId));
+      socket.on('message', (encryptedMessage, iv, senderId) => {
+        decryptMessage(sharedKey, encryptedMessage, iv)
+        .then(decryptedMessage => {
+          appendMessage(decryptedMessage, senderId);
+        })
+        .catch(err => displayError(err));
+      });
     }
   )
   .then(() => generateECDHKeyPair())
   .then(keyPair => {
     privateKey = keyPair.privateKey;
-    return exportPublicKey(privateKey);
+    return exportPublicKey(keyPair.publicKey);
   })
   .then(publicKeyJWK => {
     /* Handle incoming ECDH public key */
     socket.on('public-key', (otherPublicKeyJWK) => {
-      otherPublicKey = importPublicKey(otherPublicKeyJWK)
-      .then(() => {
+      importPublicKey(otherPublicKeyJWK)
+      .then(otherPublicKey => {
         if (sessionStorage.getItem('id') === '2') {
           console.log('ECDH keys successfully shared');
         }
-      });
+        return otherPublicKey;
+      })
+      .then(otherPublicKey => {
+        deriveSharedKey(privateKey, otherPublicKey)
+        .then(derivedKey => {
+          console.log(derivedKey);
+          sharedKey = derivedKey;
+        });
+      })
+      .catch(err => displayError(err));
 
       /* Send my public key if I have not yet since I was first to join */
       if (sessionStorage.getItem('id') === '1') {
@@ -71,9 +86,13 @@ joinButton.addEventListener('click', () => {
 
 /* Send message by clicking */
 sendButton.addEventListener('click', () => {
-  socket.emit('message', messageInput.value);
-  appendMessage(messageInput.value, sessionStorage.getItem('id'));
-  messageInput.value = '';
+  encryptMessage(sharedKey, messageInput.value)
+  .then(data => {  
+    socket.emit('message', data.encryptedMessage, data.iv);
+    appendMessage(messageInput.value, sessionStorage.getItem('id'));
+    messageInput.value = '';
+  })
+  .catch(err => displayError(err));
 });
 
 /* Send message with enter key */
