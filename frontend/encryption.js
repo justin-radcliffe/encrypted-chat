@@ -89,6 +89,26 @@ export const decryptMessage = async (key, encryptedMessage, iv) => {
   return decoder.decode(decrypted);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////   CAESAR CIPHER   //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
+/* Generate a random number between 1 and 25 (inclusive) */
+export const getRandomShift = () => Math.floor(Math.random() * 25) + 1;
 
-// TODO: make your own caesar cipher function
+/* Performs a Caesar cipher on a string with the given shift */
+export const caesarCipher = (message, shift) => {
+  shift %= 26;
+  let newMessage = '';
+  for (let i = 0; i < message.length; i++) {
+    let code = message[i].charCodeAt(0);
+    if (code >= 65 && code <= 90) {
+      newMessage += String.fromCharCode(((code - 65 + shift + 26) % 26) + 65);      
+    } else if (code >= 97 && code <= 122) {
+      newMessage += String.fromCharCode(((code - 97 + shift + 26) % 26) + 97);
+    } else {
+      newMessage += message[i];
+    }
+  }
+  return newMessage;
+};

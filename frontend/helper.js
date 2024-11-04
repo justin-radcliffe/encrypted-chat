@@ -1,6 +1,8 @@
 import { PORT } from './config.js';
 import { importPublicKey, deriveSharedKey, decryptMessage } from './encryption.js';
 
+const chatBox = document.getElementById('chat-box');
+
 /* Display an error message (console and alert) */
 export const displayError = err => {
   console.error(err);
@@ -51,7 +53,8 @@ export const appendMessage = (msg, senderId) => {
   }
   
   textBox.innerText = msg;
-  document.getElementById('chat-box').appendChild(textBox);
+  chatBox.appendChild(textBox);
+  chatBox.scrollTo(0, chatBox.scrollHeight);
 };
 
 /* Convert an ArrayBuffer to a base 64 string for socket transfer */

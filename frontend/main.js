@@ -1,14 +1,18 @@
 import { PORT } from './config.js';
 import { displayError, apiCall, appendMessage, bufferToBase64, base64ToArrayBuffer } from './helper.js';
-import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, encryptMessage, decryptMessage } from './encryption.js';
+import { generateECDHKeyPair, exportPublicKey, importPublicKey, deriveSharedKey, encryptMessage, decryptMessage, getRandomShift, caesarCipher } from './encryption.js';
 
 const joinButton = document.getElementById('join-button');
+const chatBox = document.getElementById('chat-box');
 const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
 const selectEncryption = document.getElementById('select-encryption');
 const waitingMessage = document.getElementById('waiting-message');
 
-let socket, privateKey, sharedKey, encryptStrategy;
+let socket;
+let shift;
+let privateKey, sharedKey;
+let encryptStrategy;
 
 /* Join the chat room */
 joinButton.addEventListener('click', () => {
@@ -39,6 +43,8 @@ joinButton.addEventListener('click', () => {
     socket.on('message', (encryptedMessage, iv, senderId) => {
       if (sharedKey === undefined || encryptStrategy === 'none') {
         appendMessage(encryptedMessage, senderId);
+      } else if (encryptStrategy === 'caesar') {
+        appendMessage(caesarCipher(encryptedMessage, -1 * shift), senderId);
       } else {
         decryptMessage(sharedKey, base64ToArrayBuffer(encryptedMessage), base64ToArrayBuffer(iv))
         .then(decryptedMessage => appendMessage(decryptedMessage, senderId))
@@ -60,7 +66,7 @@ joinButton.addEventListener('click', () => {
     });
 
     /* Handle incoming encryption strategy */
-    socket.on('encrypt-strategy', (receivedEncryptStrategy) => {
+    socket.on('encrypt-strategy', (receivedEncryptStrategy, caesarShift) => {
       if (receivedEncryptStrategy === 'enable') {
         selectEncryption.disabled = false;
       } else {
@@ -72,6 +78,9 @@ joinButton.addEventListener('click', () => {
         } else {
           messageInput.disabled = false;
           sendButton.disabled = false;
+          if (receivedEncryptStrategy === 'caesar') {
+            shift = caesarShift;
+          }
         }
       }
     });
@@ -117,12 +126,19 @@ sendButton.addEventListener('click', () => {
     socket.emit('message', messageInput.value);
     appendMessage(messageInput.value, sessionStorage.getItem('id'));
     messageInput.value = '';
+    chatBox.scrollTo(0, chatBox.scrollHeight);
+  } else if (encryptStrategy === 'caesar') {
+    socket.emit('message', caesarCipher(messageInput.value, shift));
+    appendMessage(messageInput.value, sessionStorage.getItem('id'));
+    messageInput.value = '';
+    chatBox.scrollTo(0, chatBox.scrollHeight);
   } else { 
     encryptMessage(sharedKey, messageInput.value)
     .then(data => {
       socket.emit('message', bufferToBase64(data.encryptedMessage), bufferToBase64(data.iv));
       appendMessage(messageInput.value, sessionStorage.getItem('id'));
       messageInput.value = '';
+      chatBox.scrollTo(0, chatBox.scrollHeight);
     })
     .catch(err => displayError(err));
   }
@@ -145,5 +161,8 @@ selectEncryption.addEventListener('change', () => {
     sendButton.disabled = false;
   }
   encryptStrategy = selectEncryption.value;
-  socket.emit('encrypt-strategy', encryptStrategy);
+  if (encryptStrategy === 'caesar') {
+    shift = getRandomShift();
+  }
+  socket.emit('encrypt-strategy', encryptStrategy, shift);
 });

@@ -33,8 +33,8 @@ io.on('connection', (socket) => {
   });
 
   /* Send encryption strategy to client */
-  socket.on('encrypt-strategy', (encryptStrategy) => {
-    socket.broadcast.emit('encrypt-strategy', encryptStrategy);
+  socket.on('encrypt-strategy', (encryptStrategy, caesarShift) => {
+    socket.broadcast.emit('encrypt-strategy', encryptStrategy, caesarShift);
   });
 
   /* Send message to all other cilents */
