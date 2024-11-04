@@ -42,6 +42,11 @@ io.on('connection', (socket) => {
     console.log(`encryptedMessage: ${encryptedMessage} | iv: ${iv}`);
     socket.broadcast.emit('message', encryptedMessage, iv, socket.handshake.auth.id);
   });
+
+  /* Remove waiting message when second user joins */
+  socket.on('second-join', () => {
+    socket.broadcast.emit('second-join');
+  });
 });
 
 server.listen(PORT, () => {

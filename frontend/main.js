@@ -6,6 +6,7 @@ const joinButton = document.getElementById('join-button');
 const sendButton = document.getElementById('send-button');
 const messageInput = document.getElementById('message-input');
 const selectEncryption = document.getElementById('select-encryption');
+const waitingMessage = document.getElementById('waiting-message');
 
 let socket, privateKey, sharedKey, encryptStrategy;
 
@@ -60,16 +61,24 @@ joinButton.addEventListener('click', () => {
 
     /* Handle incoming encryption strategy */
     socket.on('encrypt-strategy', (receivedEncryptStrategy) => {
-      encryptStrategy = receivedEncryptStrategy;
-      selectEncryption.value = receivedEncryptStrategy;
-      console.log(receivedEncryptStrategy);
-      if (receivedEncryptStrategy === '') {
-        messageInput.disabled = true;
-        sendButton.disabled = true;
+      if (receivedEncryptStrategy === 'enable') {
+        selectEncryption.disabled = false;
       } else {
-        messageInput.disabled = false;
-        sendButton.disabled = false;
+        encryptStrategy = receivedEncryptStrategy;
+        selectEncryption.value = receivedEncryptStrategy;
+        if (receivedEncryptStrategy === '') {
+          messageInput.disabled = true;
+          sendButton.disabled = true;
+        } else {
+          messageInput.disabled = false;
+          sendButton.disabled = false;
+        }
       }
+    });
+
+    /* Remove waiting message when second user joins */
+    socket.on('second-join', () => {
+      waitingMessage.style.display = 'none';
     });
 
     /* Send my public key if I am second to join */
@@ -78,6 +87,7 @@ joinButton.addEventListener('click', () => {
     }
   })
   .then(() => {
+    /* Update interface appearance */
     joinButton.style.display = 'none';
     document.getElementById('main-block').style.display = 'block';
     
@@ -85,7 +95,15 @@ joinButton.addEventListener('click', () => {
     if (sessionStorage.getItem('messenger') === 'true') {
       document.getElementById('message-box').style.display = 'flex';
       selectEncryption.style.display = 'block';
-      console.log(selectEncryption.value);
+
+      /* User specific appearance updates */
+      if (sessionStorage.getItem('id') === '1') {
+        waitingMessage.style.display = 'block';
+      } else if (sessionStorage.getItem('id') === '2') {
+        selectEncryption.disabled = false;
+        socket.emit('encrypt-strategy', 'enable');
+        socket.emit('second-join');
+      }
     } else {
       document.getElementById('spectating-message').style.display = 'block';
     }

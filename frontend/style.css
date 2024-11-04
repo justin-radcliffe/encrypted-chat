@@ -24,6 +24,13 @@ body {
   overflow-y: auto;
 }
 
+#waiting-message {
+  display: none;
+  margin: 200px 0 0 0;
+  font-size: 1.2em;
+  text-align: center;
+}
+
 #message-box {
   display: none;
 }

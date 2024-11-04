@@ -10,12 +10,14 @@
 <body>
   <button id="join-button" type="button" class="btn btn-primary btn-lg">Join chat</button>
   <div id="main-block">
-    <div id="chat-box"></div>
+    <div id="chat-box">
+      <p id="waiting-message">Waiting for second user...</p>
+    </div>
     <div id="message-box" class="input-group">
       <input id="message-input" type="text" class="form-control" placeholder="Send message" aria-label="Send message" aria-describedby="send-button" disabled>
       <button class="btn btn-success" type="button" id="send-button" disabled>Send</button>
     </div>
-    <select id="select-encryption" class="form-select">
+    <select id="select-encryption" class="form-select" disabled>
       <option value="" selected>Choose an encryption method</option>
       <option value="none">None</option>
       <option value="caesar">Caesar cipher</option>
