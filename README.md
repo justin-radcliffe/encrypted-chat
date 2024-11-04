@@ -4,4 +4,6 @@
 3. Open up two terminals, one for the backend server and one for the frontend. Run `npm start` in the backend terminal and run `npx http-server frontend -c-1` in the frontend terminal.
 4. Go to `localhost:8080` in a browser (open several tabs/windows to simulate multiple users).
 
+The port the server runs on can be changed by editing both config.js files (one in frontend and one in backend).
+
 If anything goes wrong, just restart the server and refresh the tabs/windows.
